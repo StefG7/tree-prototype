@@ -1,0 +1,48 @@
+<!-- D3 Intro from Make-School-Courses/FEW-2.5-Data-Visualization-and-Web-Graphics -->
+<!-- https://github.com/Make-School-Courses/FEW-2.5-Data-Visualization-and-Web-Graphics/blob/master/lessons/lesson-08.md -->
+<!-- 9.7.22 -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    <svg id="svg" width="500" height="500">
+        <!-- SVG objects here -->
+    </svg>
+
+    <!-- <div id="viz">
+        What if I want to display D3 Elements Here, not the whole body? 
+        GIVE THE DIV AN ID AND SELECT THAT ID
+    </div> -->
+
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+
+    <script>
+        
+        d3.json('titanic-passengers.json')
+            .then((json) => {
+                d3.select('#svg')
+                    .selectAll('circle')
+                    .data(json)
+                    .enter()
+                    .append('circle')
+                    .attr('r','3px')
+                    .attr('fill','black')
+                    .attr('cx',(p,i) => {
+                        return 500 / json.length * i
+                    })
+                    .attr('cy',(p,i) => {
+                        return p.fields.age / 100 * 500
+                    })
+            })
+
+        // OR const p = d3.json('titianic-passengers.json') p.then() to explicity state the promise
+    </script>
+</body>
+</html>

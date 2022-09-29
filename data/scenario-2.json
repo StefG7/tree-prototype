@@ -1,0 +1,30 @@
+[
+  {
+    "actor": "example_actor",
+    "children": [],
+    "id": "27a9496d-307f-43f7-8efe-7298b4dea191",
+    "label": "Top_1_MentalAction",
+    "parent": "c68ea1a5-9722-417f-a81e-5f1dec23720e",
+    "type": "ABTMentalAction",
+    "probability": 1,
+    "x": 333,
+    "y": 0,
+    "z": 14,
+    "opacity": 1,
+    "isSelected": false
+  },
+  {
+    "actor": "example_actor",
+    "children": [],
+    "id": "3748cb14-f3bc-457c-8f00-5e65d2c22d08",
+    "label": "Run_All_Campaigns_1_MentalAction",
+    "parent": "10acfafe-b0ca-4218-bc98-4077a19a183d",
+    "type": "ABTMentalAction",
+    "probability": 1,
+    "x": 333,
+    "y": 0,
+    "z": 12,
+    "opacity": 1,
+    "isSelected": false
+  }
+]
