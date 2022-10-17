@@ -1,69 +1,49 @@
+
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>Simple Tree Demo</title>
-       <script src="https://d3js.org/d3.v6.min.js"></script>
-        <style>
-            circle
-            {
-                fill: orange;
-            }
-            body
-            {
-                background-color: rgb(0, 0, 0);
-                font-family: "Lucida Console", "Courier New", monospace;
-            }
-            .link {
-                fill: none;
-                stroke: #ccc;
-                stroke-width: 3.5px;
-            }
-            div.tooltip {
-                color: white;
-                position: absolute;
-                text-align: left;
-                width: 120px;
-                /* height: 170px; */
-                padding: 8px;
-                font: 10px;
-                background: #008fc7;
-                border: solid 1px #aaa;
-                border-radius: 5px;
-                pointer-events: none;
-            }
-            div {
-                padding-top: 5em;
-            }
-            #title {
-                /* background-image: linear-gradient(to right, #487fff , #61baff); */
-                background: #008fc7;
-                border: solid 1px #aaa;
-                border-radius: 15px;
-                color: rgb(255, 255, 255);
-                text-align: center;
-                text-shadow: 2px 2px 4px black;
-                font-weight: bold;
-                margin-left: auto;
-                margin-right: auto;
-                width: 20em;
-                padding: 1em;
-                
-            }
-        </style>
+<meta charset="UTF-8">
+<style>
+    body
+    {
+        background-color: rgb(0, 0, 0);
+    }
+    .node circle {
+        fill: #fff;
+        stroke: rgb(255, 163, 42);
+        stroke-width: 4px;
+    }
 
-    </head>
-    <body>
+    .node text {
+        font: 18px sans-serif;
+        font-weight: 400;
+    }
 
-        <div>
-            <h1 id="title">"CADE | Tree Terrain"</h1>
-        </div>
+    .link {
+        fill: none;
+        stroke: #ccc;
+        stroke-width: 4px;
+    }
+    div.tooltip {
+        color: white;
+        position: absolute;
+        text-align: left;
+        width: 120px;
+        /* height: 170px; */
+        padding: 8px;
+        font: 15px sans-serif;
+        background: #008fc7;
+        border: solid 1px #aaa;
+        border-radius: 5px;
+        pointer-events: none;
+    }
+</style>
 
-        <div id="viz"></div>
+<body>
 
-        <script type="text/javascript">
+<!-- load the d3.js library -->	
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
 
-            //JSON object with the data
-            var treeData = {"name" : "Conduct Anti-Vax Campaign", "type" : "Goal", "level" : "3", "location" : "Russia", "children" : [
+var treeData = {"name" : "Conduct Anti-Vax Campaign", "type" : "Goal", "level" : "3", "location" : "Russia", "children" : [
                     {"name" : "Establish Anti-Vax Persona", "type" : "Goal", "level" : "2", "location" : "Poland" },
                     {"name" : "Boost Persona", "type" : "Goal", "level" : "2", "location" : "Mongolia" },
                     {"name" : "Establish Anti-Vax Social Media Group", "type" : "Goal", "level" : "2", "location" : "Russia", "children": [
@@ -72,134 +52,252 @@
                         ]}
                 ]};
 
-            // Create a svg canvas
-            var vis = d3.select("#viz").append("svg:svg")
-            .attr("width", window.innerWidth)//400)
-            .attr("height", window.innerHeight-350)//300)
-            .append("svg:g")
-            .attr("transform", "translate(80, 30)"); // shift everything to the right
+// Set the dimensions and margins of the diagram
+var margin = {top: 20, right: 90, bottom: 30, left: 90},
+    width = window.innerWidth - margin.left - margin.right,
+    height = window.innerHeight - margin.top - margin.bottom;
 
-            // Add tooltip div
-            var div = d3.select("body").append("div")
-            .attr("class", "tooltip")
-            .style("opacity", 1e-6);
+// append the svg object to the body of the page
+// appends a 'group' element to 'svg'
+// moves the 'group' element to the top left margin
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.right + margin.left)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(500,100)");
 
-            // Create a tree "canvas"
-            var treeMap = d3.tree()
-            .size([window.innerWidth - 300,window.innerHeight - 550]);
+var i = 0,
+    duration = 750,
+    root;
 
-            // Define diagonal for edge lines
-            var diagonal = function link(d) {
-              return "M" + d.source.x + "," + d.source.y
-                  + "C" + d.source.x + "," + (d.source.y + d.target.y) / 2
-                  + " " + d.target.x + "," + (d.source.y + d.target.y) / 2
-                  + " " + d.target.x + "," + d.target.y;
-            };
+// Add tooltip div
+var div = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 1e-6);
 
-            // Preparing the data for the tree layout, convert data into an array of nodes
-            var nodes = d3.hierarchy(treeData, function(d) {
-                return d.children;
-              });
+// declares a tree layout and assigns the size
+var treemap = d3.tree().size([height, width]);
 
-            // maps the node data to the tree layout
-            nodes = treeMap(nodes);
+// Assigns parent, children, height, depth
+root = d3.hierarchy(treeData, function(d) { return d.children; });
+root.x0 = height / 2;
+root.y0 = 0;
 
-            // Create an array with all the links
-            var links = treeMap(nodes).links();
+// Collapse after the second level
+root.children.forEach(collapse);
 
-            console.log("Raw:")
-            console.log(treeData)
-            console.log("Nodes:")
-            console.log(nodes)
-            console.log("Links:" )
-            console.log(links)
+update(root);
 
-            // Show me a link in raw and its path version
-            console.log(links[0])
-            console.log(diagonal(links[0]))
+// Collapse the node and all it's children
+function collapse(d) {
+  if(d.children) {
+    d._children = d.children
+    d._children.forEach(collapse)
+    d.children = null
+  }
+}
 
-            var link = vis.selectAll("pathlink")
-            .data(links)
-            .enter().append("svg:path")
-            .attr("class", "link")
-            .attr("d", diagonal)
+function update(source) {
 
-            var node = vis.selectAll("g.node")
-            .data(nodes)
-            .enter().append("svg:g")
-            .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+  // Assigns the x and y position for the nodes
+  var treeData = treemap(root);
 
-            // Add the dot at every node
-            node.append("svg:circle")
-            .on("mouseover", mouseover)
-            .on("mousemove", function(event,d){mousemove(event,d);})
-            .on("mouseout", mouseout)
-            // .attr("fill","red")
-            .attr("r", 8.5);
+  // Compute the new tree layout.
+  var nodes = treeData.descendants(),
+      links = treeData.descendants().slice(1);
 
-            node.append("svg:text")
-            .attr("dx", 15)
-            .attr("dy", 3)
-            .text(function(d) { return d.data.type; })
-            .attr("font-size", 1.3 + "em")
-            .style("fill","white")
-            .selectAll("text")
-              .call(wrap,100)
+  // Normalize for fixed-depth.
+  nodes.forEach(function(d){ d.y = d.depth * 180});
 
-            function mouseover() {
-                div.transition()
-                .duration(300)
-                .style("opacity", 1);
-            }
+  // ****************** Nodes section ***************************
 
-            function mousemove(event, d) {
-                var currentName = JSON.stringify(d.data.name);
-                div
-                .text("Level: " + d.data.level + " Info: " + d.data.name + " Location: " + d.data.location)
-                .style("left", (event.pageX -30) + "px")
-                .style("top", (event.pageY +15) + "px")
-                .style("height", function(d) { 
-                    // console.log(currentName.length)
-                    if (currentName.length < 20) {
-                        return 100;
-                    } else if (currentName.length >= 20 && currentName.length < 30) {
-                        return 130;
-                    } else {
-                        return 150;
-                    }
-                })
-            }
+  // Update the nodes...
+  var node = svg.selectAll('g.node')
+      .data(nodes, function(d) {return d.id || (d.id = ++i); })
 
-            function mouseout() {
-                div.transition()
-                .duration(300)
-                .style("opacity", 1e-6);
-            }
+  // Enter any new modes at the parent's previous position.
+  var nodeEnter = node.enter().append('g')
+      .attr('class', 'node')
+      .attr("transform", function(d) {
+        return "translate(" + source.y0 + "," + source.x0 + ")";
+    })
+    .on('click', click);
 
-            // text wrapping function from Mike Bostock: https://bl.ocks.org/mbostock/7555321
-            function wrap(text, width) {
-                text.each(function() {
-                    var text = d3.select(this),
-                        words = text.text().split(/\s+/).reverse(),
-                        word,
-                        line = [],
-                        lineNumber = 0,
-                        lineHeight = 1.1, // ems
-                        y = text.attr("y"),
-                        dy = parseFloat(text.attr("dy")),
-                        tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y+2).attr("dy", dy+2 + "em");
-                    while (word = words.pop()) {
-                    line.push(word);
-                    tspan.text(line.join(" "));
-                    if (tspan.node().getComputedTextLength() > width) {
-                        line.pop();
-                        tspan.text(line.join(" "));
-                        line = [word];
-                        tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
-                    }
-                    }
-                });
-            }
-        </script>
-    </body>
-</html>
+  // Add Circle for the nodes
+  nodeEnter.append('circle')
+    .on("mouseover", mouseover)
+    .on("mousemove", function(event,d){mousemove(event,d);})
+    .on("mouseout", mouseout)
+      .attr('class', 'node')
+      .attr('r', 1e-6)
+      .style("fill", function(d) {
+          return d._children ? "rgb(252, 203, 139)" : "#fff";
+      });
+
+  // Add labels for the nodes
+  nodeEnter.append('text')
+      .attr("dy", ".35em")
+      .attr("fill","white")
+      .attr("x", function(d) {
+          return d.children || d._children ? -20 : 20;
+      })
+      .attr("text-anchor", function(d) {
+          return d.children || d._children ? "end" : "start";
+      })
+      .text(function(d) { return d.data.name; })
+      .call(wrap,170);
+
+  // UPDATE
+  var nodeUpdate = nodeEnter.merge(node);
+
+  // Transition to the proper position for the node
+  nodeUpdate.transition()
+    .duration(duration)
+    .attr("transform", function(d) { 
+        return "translate(" + d.y + "," + d.x + ")";
+     });
+
+  // Update the node attributes and style
+  nodeUpdate.select('circle.node')
+    .attr('r', 11)
+    .style("fill", function(d) {
+        return d._children ? "rgb(213, 71, 71)" : "#fff";
+    })
+    .attr('cursor', 'pointer');
+
+
+  // Remove any exiting nodes
+  var nodeExit = node.exit().transition()
+      .duration(duration)
+      .attr("transform", function(d) {
+          return "translate(" + source.y + "," + source.x + ")";
+      })
+      .remove();
+
+  // On exit reduce the node circles size to 0
+  nodeExit.select('circle')
+    .attr('r', 1e-6);
+
+  // On exit reduce the opacity of text labels
+  nodeExit.select('text')
+    .style('fill-opacity', 1e-6);
+
+  // ****************** links section ***************************
+
+  // Update the links...
+  var link = svg.selectAll('path.link')
+      .data(links, function(d) { return d.id; });
+
+  // Enter any new links at the parent's previous position.
+  var linkEnter = link.enter().insert('path', "g")
+      .attr("class", "link")
+      .attr('d', function(d){
+        var o = {x: source.x0, y: source.y0}
+        return diagonal(o, o)
+      });
+
+  // UPDATE
+  var linkUpdate = linkEnter.merge(link);
+
+  // Transition back to the parent element position
+  linkUpdate.transition()
+      .duration(duration)
+      .attr('d', function(d){ return diagonal(d, d.parent) });
+
+  // Remove any exiting links
+  var linkExit = link.exit().transition()
+      .duration(duration)
+      .attr('d', function(d) {
+        var o = {x: source.x, y: source.y}
+        return diagonal(o, o)
+      })
+      .remove();
+
+  // Store the old positions for transition.
+  nodes.forEach(function(d){
+    d.x0 = d.x;
+    d.y0 = d.y;
+  });
+
+  // Creates a curved (diagonal) path from parent to the child nodes
+  function diagonal(s, d) {
+
+    path = `M ${s.y} ${s.x}
+            C ${(s.y + d.y) / 2} ${s.x},
+              ${(s.y + d.y) / 2} ${d.x},
+              ${d.y} ${d.x}`
+
+    return path
+  }
+
+  // Toggle children on click.
+  function click(event, d) {
+    if (d.children) {
+        d._children = d.children;
+        d.children = null;
+      } else {
+        d.children = d._children;
+        d._children = null;
+      }
+    update(d);
+  }
+}
+
+// tooltip mouse event functions
+function mouseover() {
+    div.transition()
+    .duration(300)
+    .style("opacity", 1);
+}
+
+function mousemove(event, d) {
+    var currentName = JSON.stringify(d.data.name);
+    div
+    .text("Level: " + d.data.level + " Info: " + d.data.name + " Location: " + d.data.location)
+    .style("left", (event.pageX -30) + "px")
+    .style("top", (event.pageY +15) + "px")
+    .style("height", function(d) { 
+        // console.log(currentName.length)
+        if (currentName.length < 20) {
+            return 100;
+        } else if (currentName.length >= 20 && currentName.length < 30) {
+            return 130;
+        } else {
+            return 150;
+        }
+    })
+}
+
+function mouseout() {
+    div.transition()
+    .duration(300)
+    .style("opacity", 1e-6);
+}
+
+// text wrapping function from Mike Bostock: https://bl.ocks.org/mbostock/7555321
+function wrap(text, width) {
+    text.each(function() {
+        var text = d3.select(this),
+            words = text.text().split(/\s+/).reverse(),
+            word,
+            line = [],
+            lineNumber = 0,
+            lineHeight = 1.1, // ems
+            y = text.attr("y"),
+            dy = parseFloat(text.attr("dy")),
+            tspan = text.text(null).append("tspan").attr("x", 0).attr("y", y+2).attr("dy", dy + 2 + "em");
+        while (word = words.pop()) {
+        line.push(word);
+        tspan.text(line.join(" "));
+        if (tspan.node().getComputedTextLength() > width) {
+            line.pop();
+            tspan.text(line.join(" "));
+            line = [word];
+            tspan = text.append("tspan").attr("x", 0).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+        }
+        }
+    });
+}
+
+</script>
+</body>
