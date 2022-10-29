@@ -26,10 +26,10 @@
         color: white;
         position: absolute;
         text-align: left;
-        width: 120px;
+        width: 170px;
         /* height: 170px; */
         padding: 8px;
-        font: 15px sans-serif;
+        font: 18px sans-serif;
         background: #008fc7;
         border: solid 1px #aaa;
         border-radius: 5px;
@@ -71,9 +71,13 @@ var i = 0,
     root;
 
 // Add tooltip div
-var div = d3.select("body").append("div")
-    .attr("class", "tooltip")
-    .style("opacity", 1e-6);
+var tooltip = d3.select('body').append("div")   
+                        .attr("class", "tooltip")               
+                        .style("opacity", 0);
+            tooltip.append('text');
+// var div = d3.select("body").append("div")
+//     .attr("class", "tooltip")
+//     .style("opacity", 1e-6);
 
 // declares a tree layout and assigns the size
 var treemap = d3.tree().size([height, width]);
@@ -245,31 +249,37 @@ function update(source) {
 
 // tooltip mouse event functions
 function mouseover() {
-    div.transition()
+    tooltip.transition()
     .duration(300)
     .style("opacity", 1);
 }
 
 function mousemove(event, d) {
     var currentName = JSON.stringify(d.data.name);
-    div
-    .text("Level: " + d.data.level + " Info: " + d.data.name + " Location: " + d.data.location)
-    .style("left", (event.pageX -30) + "px")
-    .style("top", (event.pageY +15) + "px")
-    .style("height", function(d) { 
-        // console.log(currentName.length)
-        if (currentName.length < 20) {
-            return 100;
-        } else if (currentName.length >= 20 && currentName.length < 30) {
-            return 130;
-        } else {
-            return 150;
-        }
-    })
+    tooltip.style("left", (event.pageX) + 12 + "px")     
+                        .style("top", (event.pageY - 28) + "px")
+                        .transition()        
+                        .duration(200)      
+                        .style("opacity", 1)
+    tooltip.select('text').html("<b>Level: </b>" + d.data.level + "<br> <br>" + "<b>Info: </b>" + d.data.name + "<br> <br>" + "<b>Location: </b>" + d.data.location);                    
+    // div
+    // .text("Level: " + d.data.level + " Info: " + d.data.name + " Location: " + d.data.location)
+    // .style("left", (event.pageX -30) + "px")
+    // .style("top", (event.pageY +15) + "px")
+    // .style("height", function(d) { 
+    //     // console.log(currentName.length)
+    //     if (currentName.length < 20) {
+    //         return 100;
+    //     } else if (currentName.length >= 20 && currentName.length < 30) {
+    //         return 130;
+    //     } else {
+    //         return 150;
+    //     }
+    // })
 }
 
 function mouseout() {
-    div.transition()
+    tooltip.transition()
     .duration(300)
     .style("opacity", 1e-6);
 }
