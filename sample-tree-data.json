@@ -1,0 +1,29 @@
+{
+    "name": "Conduct Anti-Vax Campaign",
+    "type": "Goal",
+    "level": 3,
+    "location": "Russia",
+    "children": [
+      {
+        "name": "Establish Anti-Vax Persona", "type": "Goal", "level": 2, "location": "Poland"
+      },
+      {
+        "name": "Boost Persona", "type": "Goal", "level": 2, "location": "Mongolia"
+      },
+      {
+        "name": "Establish Anti-Vax Social Media Group",
+        "type": "Goal",
+        "level": 2,
+        "location": "Russia",
+        "children": [
+
+          {
+            "name": "Create Social Media Site",
+            "type": "Goal",
+            "level": 1,
+            "location": "Russia"
+          }
+        ]
+      }
+    ]
+  }
